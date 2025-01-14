@@ -1,0 +1,14 @@
+providers:
+  swarm:
+    # swarm classic (1.12-)
+    # endpoint: "tcp://127.0.0.1:2375"
+    # docker swarm mode (1.12+)
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+entryPoints:
+  web:
+    address: ":80"  # Traefik escucha en el puerto 80
+  websecure:
+    address: ":443"  # Traefik escucha en el puerto 443
+api:
+  insecure: true  # Habilita la API web de Traefik
