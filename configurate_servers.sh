@@ -10,8 +10,8 @@ CYAN="\e[36m"
 RESET="\e[0m"
 
 # Configuración de nodos
-MANAGER="root@164.92.84.181"  # Nodo que será el manager
-WORKERS=("root@24.144.82.202" "root@24.144.92.34")  # Nodos que serán workers
+MANAGER="root@ip_manager"  # Nodo que será el manager
+WORKERS=("root@ip_worker1" "root@ip_worker2")  # Nodos que serán workers
 
 # Comandos para instalación de Docker
 DOCKER_INSTALL_COMMANDS="
