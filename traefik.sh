@@ -12,17 +12,17 @@ RESET="\e[0m"
 # Configuración de nodos
 MANAGER="root@ip_manager"  # Nodo que será el manager
 
-LOCAL_YML_PATH="./"
-REMOTE_YML_PATH="~"
+LOCAL_PATH="./traefik/*"
+REMOTE_PATH="~/traefik"
 
 # Desplegar Traefik
 deploy_traefik() {
     echo -e "${YELLOW}[*]${RESET} Copiando carpeta traefik a la máquina remota"
-    scp -r $LOCAL_YML_PATH/traefik $MANAGER:$REMOTE_YML_PATH
+    scp -r $LOCAL_PATH $MANAGER:$REMOTE_PATH
     echo -e "${GREEN}[+]${RESET} Carpeta traefik copiada"
     local server_ip=$(ssh $MANAGER "hostname -I | cut -d' ' -f1")
     echo -e "${YELLOW}[*]${RESET} Desplegando Traefik"
-    ssh $MANAGER "docker stack deploy -c $REMOTE_YML_PATH/traefik/docker-compose.yml traefik"
+    ssh $MANAGER "docker stack deploy -c $REMOTE_PATH/docker-compose.yml traefik"
     echo -e "${GREEN}[+]${RESET} Traefik desplegado. Accede al dashboard en http://$server_ip:8080"
 }
 
