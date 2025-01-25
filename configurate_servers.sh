@@ -48,6 +48,10 @@ initialize_swarm() {
         # Extrae el token de unión para los workers
         JOIN_TOKEN=$(ssh $MANAGER "docker swarm join-token worker -q")
         echo -e "${GREEN}[+]${RESET} Docker Swarm inicializado en el manager"
+
+        echo -e "${YELLOW}[*]${RESET} Creando red overlay para el Swarm"
+        ssh $MANAGER "docker network create --driver=overlay traefik-public"
+        echo -e "${GREEN}[+]${RESET} Red overlay creada"
     fi
 }
 
