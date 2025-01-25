@@ -4,10 +4,6 @@ services:
   reverse-proxy:
     # The official v3 Traefik docker image
     image: traefik:v3.3
-    # Configs
-    configs:
-      - source: traefik_conf
-        target: /etc/traefik/traefik.yml
     deploy:
       placement:
         constraints:
@@ -22,6 +18,8 @@ services:
     volumes:
       # So that Traefik can listen to the Docker events
       - /var/run/docker.sock:/var/run/docker.sock
+      # Mount the configuration file
+      - ./traefik.yml:/etc/traefik/traefik.yml
 
 configs:
   traefik_conf:

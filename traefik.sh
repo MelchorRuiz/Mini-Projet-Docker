@@ -22,7 +22,6 @@ deploy_traefik() {
     echo -e "${GREEN}[+]${RESET} Carpeta traefik copiada"
     local server_ip=$(ssh $MANAGER "hostname -I | cut -d' ' -f1")
     echo -e "${YELLOW}[*]${RESET} Desplegando Traefik"
-    ssh $MANAGER "docker config create traefik_conf $REMOTE_YML_PATH/traefik/traefik.yml"
     ssh $MANAGER "docker stack deploy -c $REMOTE_YML_PATH/traefik/docker-compose.yml traefik"
     echo -e "${GREEN}[+]${RESET} Traefik desplegado. Accede al dashboard en http://$server_ip:8080"
 }
