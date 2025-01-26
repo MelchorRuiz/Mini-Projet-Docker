@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="favicon.svg" type="image/svg+xml">
+    <title>Web Simple</title>
+    <meta name="description" content="Web simple with text animation">
+    <meta name="author" content="Melchor Ruiz">
+    <meta name="keywords" content="web, simple, text, animation">
+    <meta name="robots" content="index, follow">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #cbdad5;
+            color: #333;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        div {
+            display: flex;
+            align-items: center;
+        }
+        h1 {
+            font-size: 2em;
+            color: #34344e;
+        }
+        .cursor { 
+            display: inline-block; 
+            width: 5px; 
+            height: 24px; 
+            background: black; 
+            animation: blink 0.7s infinite; 
+        }
+        @keyframes blink { 
+            50% { opacity: 0; } 
+        }
+        .copy {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 1rem;
+        }
+    </style>
+    <script type="module">
+        const h1 = document.querySelector('h1');
+        const texts = [
+            'Ceci est une page web simple',
+            'Esto es una página web simple',
+            'This is a simple web page',
+        ];
+
+        let currentText = 0;
+
+        function writeText(index) {
+            let i = 0;
+            function eraseText() {
+                if (i >= 0) {
+                    h1.textContent = texts[index].substring(0, i);
+                    i--;
+                    setTimeout(eraseText, 100);
+                } else {
+                    currentText = (currentText + 1) % texts.length;
+                    setTimeout(writeText, 1000, currentText);
+                }
+            }
+            function write() {
+                if (i < texts[index].length) {
+                    h1.textContent += texts[index].charAt(i);
+                    i++;
+                    setTimeout(write, 100);
+                } else {
+                    setTimeout(eraseText, 2000);
+                }
+            }
+            write();
+        }
+        writeText(currentText);
+    </script>
+</head>
+<body>
+    <div>
+        <h1></h1>
+        <span class="cursor"></span>
+    </div>
+    <p class="copy">
+        Made with ❤️ by <a href="https://github.com/MelchorRuiz">Melchor Ruiz</a>
+    </p>
+</body>
+</html>
