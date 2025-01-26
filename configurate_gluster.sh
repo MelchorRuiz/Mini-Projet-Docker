@@ -10,8 +10,8 @@ CYAN="\e[36m"
 RESET="\e[0m"
 
 # Configuración de nodos
-MANAGER="ip_manager"  # Nodo que será el manager
-WORKERS=("ip_worker1" "ip_worker2")  # Nodos que serán workers
+MANAGER="root@ip_manager"  # Nodo que será el manager
+WORKERS=("root@ip_worker1" "root@ip_worker2")  # Nodos que serán workers
 
 install_gluster() {
     local node="$1"
