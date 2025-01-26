@@ -2,7 +2,7 @@ version: '3'
 
 services:
   apache:
-    image: h4lofthemel/web-simple
+    image: httpd
     deploy:
       replicas: 1
       labels:
@@ -11,6 +11,9 @@ services:
         - "traefik.http.services.apache.loadbalancer.server.port=80"
     networks:
       - traefik-public
+    volumes:
+      - ./favicon.svg:/usr/local/apache2/htdocs/web-simple/favicon.svg
+      - ./index.html:/usr/local/apache2/htdocs/web-simple/index.html
 
 networks:
   traefik-public:

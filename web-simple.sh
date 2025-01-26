@@ -13,12 +13,12 @@ RESET="\e[0m"
 MANAGER="root@ip_manager"  # Nodo que será el manager
 
 LOCAL_PATH="./web-simple"
-REMOTE_PATH="~/web-simple"
+REMOTE_PATH="/mnt/gv0/web-simple"
 
 # Desplegar web simple
 deploy_web_simple() {
     echo -e "${YELLOW}[*]${RESET} Copiando carpeta web-simple a la máquina remota"
-    scp -r $LOCAL_PATH/docker-compose.yml $MANAGER:$REMOTE_PATH/docker-compose.yml
+    scp -r $LOCAL_PATH $MANAGER:/mnt/gv0/
     echo -e "${GREEN}[+]${RESET} compose web-simple copiado"
     local server_ip=$(ssh $MANAGER "hostname -I | cut -d' ' -f1")
     echo -e "${YELLOW}[*]${RESET} Desplegando web simple"
