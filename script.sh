@@ -9,15 +9,18 @@ MAGENTA="\e[35m"
 CYAN="\e[36m"
 RESET="\e[0m"
 
-# Configuración de nodos
-MANAGER="root@164.92.84.181"  # Nodo que será el manager
-WORKERS=("root@24.144.82.202" "root@24.144.92.34")  # Nodos que serán workers
+echo -e "${YELLOW}[*]${RESET} Proyecto Docker Swarm"
 
-LOCAL_YML_PATH="./"
-REMOTE_YML_PATH="/tmp"
+echo -e "${YELLOW}[*]${RESET} Configurar docker en los servidores"
+./configurate_docker.sh
 
-echo -e "${YELLOW}[*]${RESET} Configurar los servidores"
-./init_servers.sh
+echo -e "${YELLOW}[*]${RESET} Configurar gluster en los servidores"
+./configurate_gluster.sh
 
-echo -e "${YELLOW}[*]${RESET} Configurar los servicios"
-./init_services.sh
+echo -e "${YELLOW}[*]${RESET} Configurar traefik en los servidores"
+./traefik.sh
+
+echo -e "${YELLOW}[*]${RESET} Crear una pagina web simple"
+./web-simple.sh
+
+echo -e "${YELLOW}[+]${RESET} Finalizado"
