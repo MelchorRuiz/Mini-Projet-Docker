@@ -46,6 +46,7 @@ services:
     depends_on:
       - mysql-1
       - redis-1
+      - reverse-proxy
     environment:
       DB_SERVERNAME: mysql-1
       DB_USERNAME: root
@@ -60,6 +61,54 @@ services:
         - "traefik.http.routers.get-back-in-touch.rule=Host(`utilisateurs.o22408064`)"
         - "traefik.http.services.get-back-in-touch.loadbalancer.server.port=80"
 
+  # Swarm cluster
+  redis-2:
+    image: redis:latest
+    networks:
+      - swarm-cluster_default
+    deploy:
+      replicas: 2
+    volumes:
+      - type: volume
+        source: redis-data
+        target: /data
+
+  mysql-2:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: motdepasse
+      MYSQL_DATABASE: ma_base_de_donnees
+    networks:
+      - swarm-cluster_default
+    deploy:
+      replicas: 1
+    volumes:
+      - type: bind
+        source: /mnt/gv1
+        target: /var/lib/mysql
+
+  swarm-cluster:
+    image: h4lofthemel/swarm-cluster:v1.0
+    networks:
+      - swarm-cluster_default
+      - traefik-public
+    depends_on:
+      - mysql-2
+      - redis-2
+      - reverse-proxy
+    environment:
+      DB_SERVERNAME: mysql-2
+      DB_USERNAME: root
+      DB_PASSWORD: motdepasse
+      DB_NAME: ma_base_de_donnees
+      REDIS_HOST: redis-2
+    deploy:
+      replicas: 5
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.swarm-cluster.rule=Host(`clusterswarm.o22408064`)"
+        - "traefik.http.services.swarm-cluster.loadbalancer.server.port=80"
+
   # Web simple
   web-simple:
     image: h4lofthemel/web-simple:v1.0.1
@@ -71,6 +120,8 @@ services:
         - "traefik.http.services.apache.loadbalancer.server.port=80"
     networks:
       - traefik-public
+    depends_on:
+      - reverse-proxy
 
 networks:
   traefik-public:
@@ -79,3 +130,10 @@ networks:
   get-back-in-touch_default:
     driver: overlay
     external: false
+  swarm-cluster_default:
+    driver: overlay
+    external: false
+
+volumes:
+  redis-data:
+    driver: local

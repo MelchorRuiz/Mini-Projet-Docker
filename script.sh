@@ -130,11 +130,16 @@ configure_gluster() {
 
 make_gluster_volume() {
     local volume_name="$1"
+    local brick_dir="/data/$volume_name"
     echo -e "${YELLOW}[*]${RESET} Creando volumen de GlusterFS: ${BLUE}$volume_name${RESET}"
     if ssh root@$MANAGER "sudo gluster volume info $volume_name | grep -q 'Status: Started'"; then
         echo -e "${GREEN}[+]${RESET} Volumen de GlusterFS ${BLUE}$volume_name${RESET} ya está creado y en funcionamiento"
     else
-        ssh root@$MANAGER "sudo gluster volume create $volume_name replica 3 transport tcp ${MANAGER}:/data ${WORKERS[0]}:/data ${WORKERS[1]}:/data force"
+        ssh root@$MANAGER "sudo mkdir -p $brick_dir"
+        for worker in "${WORKERS[@]}"; do
+            ssh root@$worker "sudo mkdir -p $brick_dir"
+        done
+        ssh root@$MANAGER "sudo gluster volume create $volume_name replica 3 transport tcp ${MANAGER}:${brick_dir} ${WORKERS[0]}:${brick_dir} ${WORKERS[1]}:${brick_dir} force"
         ssh root@$MANAGER "sudo gluster volume start $volume_name"
         echo -e "${GREEN}[+]${RESET} Volumen de GlusterFS ${BLUE}$volume_name${RESET} creado"
     fi
@@ -179,7 +184,8 @@ done
 # Configura GlusterFS
 configure_gluster
 
-VOLUMES = ("gv0")
+# Crea y monta los volúmenes de GlusterFS
+VOLUMES=("gv0" "gv1")
 for volume in "${VOLUMES[@]}"; do
     make_gluster_volume $volume
     mount_gluster $MANAGER $volume
@@ -188,8 +194,6 @@ for volume in "${VOLUMES[@]}"; do
     done
     active_auto_curation $volume
 done
-
-active_auto_curation
 
 echo -e "${GREEN}[+]${RESET} Configuración de GlusterFS finalizada"
 
