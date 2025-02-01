@@ -109,6 +109,20 @@ services:
         - "traefik.http.routers.swarm-cluster.rule=Host(`clusterswarm.o22408064`)"
         - "traefik.http.services.swarm-cluster.loadbalancer.server.port=80"
 
+  # fortune
+  fortune:
+    image: h4lofthemel/fortune:v1.0
+    networks:
+      - traefik-public
+    depends_on:
+      - reverse-proxy
+    deploy:
+      replicas: 1
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.fortune.rule=Host(`fortune.o22408064`)"
+        - "traefik.http.services.fortune.loadbalancer.server.port=80"
+        
   # Web simple
   web-simple:
     image: h4lofthemel/web-simple:v1.0.1
