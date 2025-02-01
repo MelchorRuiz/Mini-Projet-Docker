@@ -122,6 +122,34 @@ services:
         - "traefik.enable=true"
         - "traefik.http.routers.fortune.rule=Host(`fortune.o22408064`)"
         - "traefik.http.services.fortune.loadbalancer.server.port=80"
+      
+  # flask
+  redis-3:
+    image: redis:latest
+    networks:
+      - traefik-public
+    deploy:
+      replicas: 1
+    volumes:
+      - type: volume
+        source: redis-data
+        target: /data
+
+  flask:
+    image: h4lofthemel/flask:v1.0
+    networks:
+      - traefik-public
+    depends_on:
+      - reverse-proxy
+      - redis-3
+    environment:
+      REDIS_HOST: redis-3
+    deploy:
+      replicas: 1
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.flask.rule=Host(`flask.o22408064`)"
+        - "traefik.http.services.flask.loadbalancer.server.port=80"
         
   # Web simple
   web-simple:
