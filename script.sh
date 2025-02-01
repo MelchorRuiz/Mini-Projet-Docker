@@ -129,39 +129,42 @@ configure_gluster() {
 }
 
 make_gluster_volume() {
-    echo -e "${YELLOW}[*]${RESET} Creando volumen de GlusterFS"
-    if ssh root@$MANAGER "sudo gluster volume info gv0 | grep -q 'Status: Started'"; then
-        echo -e "${GREEN}[+]${RESET} Volumen de GlusterFS ya está creado y en funcionamiento"
+    local volume_name="$1"
+    echo -e "${YELLOW}[*]${RESET} Creando volumen de GlusterFS: ${BLUE}$volume_name${RESET}"
+    if ssh root@$MANAGER "sudo gluster volume info $volume_name | grep -q 'Status: Started'"; then
+        echo -e "${GREEN}[+]${RESET} Volumen de GlusterFS ${BLUE}$volume_name${RESET} ya está creado y en funcionamiento"
     else
-        ssh root@$MANAGER "sudo gluster volume create gv0 replica 3 transport tcp ${MANAGER}:/data ${WORKERS[0]}:/data ${WORKERS[1]}:/data force"
-        ssh root@$MANAGER "sudo gluster volume start gv0"
-        echo -e "${GREEN}[+]${RESET} Volumen de GlusterFS creado"
+        ssh root@$MANAGER "sudo gluster volume create $volume_name replica 3 transport tcp ${MANAGER}:/data ${WORKERS[0]}:/data ${WORKERS[1]}:/data force"
+        ssh root@$MANAGER "sudo gluster volume start $volume_name"
+        echo -e "${GREEN}[+]${RESET} Volumen de GlusterFS ${BLUE}$volume_name${RESET} creado"
     fi
 }
 
 mount_gluster() {
     local node="$1"
-    echo -e "${YELLOW}[*]${RESET} Montando volumen de GlusterFS en: ${BLUE}$node${RESET}"
-    if ssh root@$node "mount | grep -q '/mnt/gv0'"; then
-        echo -e "${GREEN}[+]${RESET} Volumen de GlusterFS ya está montado en: ${BLUE}$node${RESET}"
+    local volume_name="$2"
+    echo -e "${YELLOW}[*]${RESET} Montando volumen de GlusterFS ${BLUE}$volume_name${RESET} en: ${BLUE}$node${RESET}"
+    if ssh root@$node "mount | grep -q '/mnt/$volume_name'"; then
+        echo -e "${GREEN}[+]${RESET} Volumen de GlusterFS ${BLUE}$volume_name${RESET} ya está montado en: ${BLUE}$node${RESET}"
     else
         ssh root@$node "sudo apt install -y glusterfs-client"
-        ssh root@$node "sudo mkdir -p /mnt/gv0"
-        ssh root@$node "sudo mount -t glusterfs ${MANAGER}:/gv0 /mnt/gv0"
-        echo -e "${GREEN}[+]${RESET} Volumen de GlusterFS montado en: ${BLUE}$node${RESET}"
-        echo -e "${YELLOW}[*]${RESET} Modificando /etc/fstab para montar el volumen de GlusterFS en el arranque"
-        ssh root@$node "echo '${MANAGER}:/gv0 /mnt/gv0 glusterfs defaults,_netdev 0 0' | sudo tee -a /etc/fstab"
-        echo -e "${GREEN}[+]${RESET} Volumen de GlusterFS montado en el arranque en: ${BLUE}$node${RESET}"
+        ssh root@$node "sudo mkdir -p /mnt/$volume_name"
+        ssh root@$node "sudo mount -t glusterfs ${MANAGER}:/$volume_name /mnt/$volume_name"
+        echo -e "${GREEN}[+]${RESET} Volumen de GlusterFS ${BLUE}$volume_name${RESET} montado en: ${BLUE}$node${RESET}"
+        echo -e "${YELLOW}[*]${RESET} Modificando /etc/fstab para montar el volumen de GlusterFS ${BLUE}$volume_name${RESET} en el arranque"
+        ssh root@$node "echo '${MANAGER}:/$volume_name /mnt/$volume_name glusterfs defaults,_netdev 0 0' | sudo tee -a /etc/fstab"
+        echo -e "${GREEN}[+]${RESET} Volumen de GlusterFS ${BLUE}$volume_name${RESET} montado en el arranque en: ${BLUE}$node${RESET}"
     fi
 }
 
 active_auto_curation() {
-    echo -e "${YELLOW}[*]${RESET} Activando la curación automática de GlusterFS"
-    if ssh root@$MANAGER "sudo gluster volume get gv0 cluster.self-heal-daemon | grep -q 'on'"; then
-        echo -e "${GREEN}[+]${RESET} Curación automática ya está activada"
+    local volume_name="$1"
+    echo -e "${YELLOW}[*]${RESET} Activando la curación automática de GlusterFS para el volumen: ${BLUE}$volume_name${RESET}"
+    if ssh root@$MANAGER "sudo gluster volume get $volume_name cluster.self-heal-daemon | grep -q 'on'"; then
+        echo -e "${GREEN}[+]${RESET} Curación automática ya está activada para el volumen: ${BLUE}$volume_name${RESET}"
     else
-        ssh root@$MANAGER "sudo gluster volume set gv0 cluster.self-heal-daemon on"
-        echo -e "${GREEN}[+]${RESET} Curación automática activada"
+        ssh root@$MANAGER "sudo gluster volume set $volume_name cluster.self-heal-daemon on"
+        echo -e "${GREEN}[+]${RESET} Curación automática activada para el volumen: ${BLUE}$volume_name${RESET}"
     fi
 }
 
@@ -176,13 +179,14 @@ done
 # Configura GlusterFS
 configure_gluster
 
-# Crea un volumen de GlusterFS
-make_gluster_volume
-
-# Monta el volumen de GlusterFS
-mount_gluster $MANAGER
-for worker in "${WORKERS[@]}"; do
-    mount_gluster $worker
+VOLUMES = ("gv0")
+for volume in "${VOLUMES[@]}"; do
+    make_gluster_volume $volume
+    mount_gluster $MANAGER $volume
+    for worker in "${WORKERS[@]}"; do
+        mount_gluster $worker $volume
+    done
+    active_auto_curation $volume
 done
 
 active_auto_curation
