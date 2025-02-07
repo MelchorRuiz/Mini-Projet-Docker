@@ -86,6 +86,8 @@ join_swarm_workers() {
             echo -e "${GREEN}[+]${RESET} El worker ya está unido al Swarm: ${BLUE}$worker${RESET}"
         else
             echo -e "${YELLOW}[*]${RESET} Uniendo worker al Swarm: ${BLUE}$worker${RESET}"
+            JOIN_TOKEN=$(ssh $USER@$MANAGER "docker swarm join-token worker -q")
+            MANAGER_IP=$(ssh $USER@$MANAGER "hostname -I | awk '{print \$1}'")
             ssh $USER@$worker "sudo docker swarm join --token $JOIN_TOKEN $MANAGER_IP:2377"
             echo -e "${GREEN}[+]${RESET} Worker unido al Swarm: ${BLUE}$worker${RESET}"
         fi
@@ -124,7 +126,9 @@ configure_gluster() {
     if ssh $USER@$MANAGER "sudo gluster peer status | grep -q 'Number of Peers: 2'"; then
         echo -e "${GREEN}[+]${RESET} GlusterFS ya está configurado"
     else
-        ssh $USER@$MANAGER "sudo gluster peer probe ${WORKERS[0]} && sudo gluster peer probe ${WORKERS[1]} && sudo gluster pool list"
+        local worker1_ip=$(ssh $USER@${WORKERS[0]} "hostname -I | cut -d' ' -f1")
+        local worker2_ip=$(ssh $USER@${WORKERS[1]} "hostname -I | cut -d' ' -f1")
+        ssh $USER@$MANAGER "sudo gluster peer probe $worker1_ip && sudo gluster peer probe $worker2_ip && sudo gluster pool list"
         echo -e "${GREEN}[+]${RESET} GlusterFS configurado"
     fi
 }
@@ -140,7 +144,10 @@ make_gluster_volume() {
         for worker in "${WORKERS[@]}"; do
             ssh $USER@$worker "sudo mkdir -p $brick_dir"
         done
-        ssh $USER@$MANAGER "sudo gluster volume create $volume_name replica 3 transport tcp ${MANAGER}:${brick_dir} ${WORKERS[0]}:${brick_dir} ${WORKERS[1]}:${brick_dir} force"
+        local manager_ip=$(ssh $USER@$MANAGER "hostname -I | cut -d' ' -f1")
+        local worker1_ip=$(ssh $USER@${WORKERS[0]} "hostname -I | cut -d' ' -f1")
+        local worker2_ip=$(ssh $USER@${WORKERS[1]} "hostname -I | cut -d' ' -f1")
+        ssh $USER@$MANAGER "sudo gluster volume create $volume_name replica 3 transport tcp ${manager_ip}:${brick_dir} ${worker1_ip}:${brick_dir} ${worker2_ip}:${brick_dir} force"
         ssh $USER@$MANAGER "sudo gluster volume start $volume_name"
         echo -e "${GREEN}[+]${RESET} Volumen de GlusterFS ${BLUE}$volume_name${RESET} creado"
     fi
@@ -155,7 +162,8 @@ mount_gluster() {
     else
         ssh $USER@$node "sudo apt install -y glusterfs-client"
         ssh $USER@$node "sudo mkdir -p /mnt/$volume_name"
-        ssh $USER@$node "sudo mount -t glusterfs ${MANAGER}:/$volume_name /mnt/$volume_name"
+        local manager_ip=$(ssh $USER@$MANAGER "hostname -I | cut -d' ' -f1")
+        ssh $USER@$node "sudo mount -t glusterfs ${manager_ip}:/$volume_name /mnt/$volume_name"
         echo -e "${GREEN}[+]${RESET} Volumen de GlusterFS ${BLUE}$volume_name${RESET} montado en: ${BLUE}$node${RESET}"
         echo -e "${YELLOW}[*]${RESET} Modificando /etc/fstab para montar el volumen de GlusterFS ${BLUE}$volume_name${RESET} en el arranque"
         ssh $USER@$node "echo '${MANAGER}:/$volume_name /mnt/$volume_name glusterfs defaults,_netdev 0 0' | sudo tee -a /etc/fstab"
