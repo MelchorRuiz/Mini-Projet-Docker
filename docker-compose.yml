@@ -122,7 +122,7 @@ services:
         - "traefik.enable=true"
         - "traefik.http.routers.fortune.rule=Host(`fortune.o22408064`)"
         - "traefik.http.services.fortune.loadbalancer.server.port=80"
-      
+
   # flask
   redis-3:
     image: redis:latest
@@ -150,7 +150,7 @@ services:
         - "traefik.enable=true"
         - "traefik.http.routers.flask.rule=Host(`flask.o22408064`)"
         - "traefik.http.services.flask.loadbalancer.server.port=80"
-        
+
   # Web simple
   web-simple:
     image: h4lofthemel/web-simple:v1.0.1
