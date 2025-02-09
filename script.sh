@@ -21,13 +21,13 @@ RESET="\e[0m"
 echo -e "${YELLOW}[*]${RESET} Proyecto Docker Swarm"
 
 # Configuración de nodos
-USER=o22408064
-MANAGER=$1  # Nodo que será el manager
-WORKERS=($2 $3)  # Nodos que serán workers
+USER=$1
+MANAGER=$2  # Nodo que será el manager
+WORKERS=($3 $4)  # Nodos que serán workers
 
 # Verificar si se proporcionaron los argumentos necesarios
 if [ -z "$MANAGER" ] || [ -z "$WORKERS" ]; then
-    echo -e "${RED}[!]${RESET} Uso: $0 <manager_ip> <worker1_ip> <worker2_ip>"
+    echo -e "${RED}[!]${RESET} Uso: $0 <usuario> <manager> <worker1> <worker2>"
     exit 1
 fi
 
@@ -59,17 +59,15 @@ initialize_swarm() {
     echo -e "${YELLOW}[*]${RESET} Comprobando si Docker Swarm ya está inicializado en el manager"
 
     # Verificar si el manager ya es parte de un swarm
-    SWARM_STATUS=$(ssh $USER@$MANAGER "docker info --format '{{.Swarm.LocalNodeState}}'")
-    MANAGER_IP=$(ssh $USER@$MANAGER "hostname -I | awk '{print \$1}'")
+    local swarm_status=$(ssh $USER@$MANAGER "docker info --format '{{.Swarm.LocalNodeState}}'")
+    local manager_ip=$(ssh $USER@$MANAGER "hostname -I | awk '{print \$1}'")
 
-    if [ "$SWARM_STATUS" == "active" ]; then
+    if [ "$swarm_status" == "active" ]; then
         echo -e "${GREEN}[+]${RESET} Docker Swarm ya está inicializado en el manager"
     else
         echo -e "${YELLOW}[*]${RESET} Inicializando Docker Swarm en el manager"
-        ssh $USER@$MANAGER "docker swarm init --advertise-addr $MANAGER_IP"
+        ssh $USER@$MANAGER "docker swarm init --advertise-addr $manager_ip"
 
-        # Extrae el token de unión para los workers
-        JOIN_TOKEN=$(ssh $USER@$MANAGER "docker swarm join-token worker -q")
         echo -e "${GREEN}[+]${RESET} Docker Swarm inicializado en el manager"
     fi
 }
@@ -80,15 +78,15 @@ join_swarm_workers() {
         echo -e "${YELLOW}[*]${RESET} Comprobando si el worker ya está unido al Swarm: ${BLUE}$worker${RESET}"
 
         # Verificar si el worker ya está en un swarm
-        SWARM_STATUS=$(ssh $USER@$worker "docker info --format '{{.Swarm.LocalNodeState}}'")
+        local swarm_status=$(ssh $USER@$worker "docker info --format '{{.Swarm.LocalNodeState}}'")
 
-        if [ "$SWARM_STATUS" == "active" ]; then
+        if [ "$swarm_status" == "active" ]; then
             echo -e "${GREEN}[+]${RESET} El worker ya está unido al Swarm: ${BLUE}$worker${RESET}"
         else
             echo -e "${YELLOW}[*]${RESET} Uniendo worker al Swarm: ${BLUE}$worker${RESET}"
-            JOIN_TOKEN=$(ssh $USER@$MANAGER "docker swarm join-token worker -q")
-            MANAGER_IP=$(ssh $USER@$MANAGER "hostname -I | awk '{print \$1}'")
-            ssh $USER@$worker "sudo docker swarm join --token $JOIN_TOKEN $MANAGER_IP:2377"
+            local join_token=$(ssh $USER@$MANAGER "docker swarm join-token worker -q")
+            local manager_ip=$(ssh $USER@$MANAGER "hostname -I | awk '{print \$1}'")
+            ssh $USER@$worker "sudo docker swarm join --token $join_token $manager_ip:2377"
             echo -e "${GREEN}[+]${RESET} Worker unido al Swarm: ${BLUE}$worker${RESET}"
         fi
     done

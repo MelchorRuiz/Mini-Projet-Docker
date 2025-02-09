@@ -1,3 +1,4 @@
+version: '3'
 services:
   # Traefik service
   reverse-proxy:
@@ -20,7 +21,7 @@ services:
   redis-1:
     image: redis:latest
     networks:
-      - get-back-in-touch_default
+      - traefik-public
     deploy:
       replicas: 1
 
@@ -30,18 +31,15 @@ services:
       MYSQL_ROOT_PASSWORD: motdepasse
       MYSQL_DATABASE: ma_base_de_donnees
     networks:
-      - get-back-in-touch_default
+      - traefik-public
     deploy:
       replicas: 1
     volumes:
-      - type: bind
-        source: /mnt/gv0
-        target: /var/lib/mysql
+      - mysql_gv0:/var/lib/mysql
 
   get-back-in-touch:
     image: h4lofthemel/get-back-in-touch:v1.0
     networks:
-      - get-back-in-touch_default
       - traefik-public
     depends_on:
       - mysql-1
@@ -65,13 +63,11 @@ services:
   redis-2:
     image: redis:latest
     networks:
-      - swarm-cluster_default
+      - traefik-public
     deploy:
       replicas: 2
     volumes:
-      - type: volume
-        source: redis-data
-        target: /data
+      - redis_data:/data
 
   mysql-2:
     image: mysql:latest
@@ -79,18 +75,15 @@ services:
       MYSQL_ROOT_PASSWORD: motdepasse
       MYSQL_DATABASE: ma_base_de_donnees
     networks:
-      - swarm-cluster_default
+      - traefik-public
     deploy:
       replicas: 1
     volumes:
-      - type: bind
-        source: /mnt/gv1
-        target: /var/lib/mysql
+      - mysql_gv1:/var/lib/mysql
 
   swarm-cluster:
     image: h4lofthemel/swarm-cluster:v1.0
     networks:
-      - swarm-cluster_default
       - traefik-public
     depends_on:
       - mysql-2
@@ -131,9 +124,7 @@ services:
     deploy:
       replicas: 1
     volumes:
-      - type: volume
-        source: redis-data
-        target: /data
+      - redis_data:/data
 
   flask:
     image: h4lofthemel/flask:v1.0
@@ -169,13 +160,20 @@ networks:
   traefik-public:
     driver: overlay
     external: false
-  get-back-in-touch_default:
-    driver: overlay
-    external: false
-  swarm-cluster_default:
-    driver: overlay
-    external: false
 
 volumes:
-  redis-data:
+  redis_data:
     driver: local
+  mysql_gv0:
+    driver: local
+    driver_opts:
+      type: none
+      device: /mnt/gv0
+      o: bind
+  mysql_gv1:
+    driver: local
+    driver_opts:
+      type: none
+      device: /mnt/gv1
+      o: bind
+      
