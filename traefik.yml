@@ -1,14 +1,21 @@
 providers:
   swarm:
-    # swarm classic (1.12-)
     # endpoint: "tcp://127.0.0.1:2375"
-    # docker swarm mode (1.12+)
     endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false
+  file:
+    filename: /etc/traefik/dynamic.yml
+    watch: true 
 entryPoints:
   web:
-    address: ":80"  # Traefik escucha en el puerto 80
+    address: ":80"
+    http:
+      middlewares:
+        - global-auth@file
   websecure:
-    address: ":443"  # Traefik escucha en el puerto 443
+    address: ":443"
+    http:
+      middlewares:
+        - global-auth@file
 api:
-  insecure: true  # Habilita la API web de Traefik
+  insecure: true

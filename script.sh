@@ -213,6 +213,7 @@ echo -e "${YELLOW}[*]${RESET} Deploying services with Docker stack"
 echo -e "${YELLOW}[*]${RESET} Copying files to the remote machine"
 scp docker-compose.yml $USER@$MANAGER:~
 scp -r traefik.yml $USER@$MANAGER:~
+scp -r dynamic.yml $USER@$MANAGER:~
 echo -e "${GREEN}[+]${RESET} Files copied"
 
 server_ip=$(ssh $USER@$MANAGER "hostname -I | cut -d' ' -f1")
