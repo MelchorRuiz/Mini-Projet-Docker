@@ -1,19 +1,13 @@
 # Mini Projet de synthèse
 Melchor Ruiz González
 
-Pour accéder aux pages, la commande suivante doit être exécutée
-```bash
-ssh -J o22408064@acces-tp.iut45.univ-orleans.fr -o StrictHostKeyChecking=no -L 8080:0.0.0.0:80 -L 8081:0.0.0.0:8080 -N o22408064@o22408064-2
-```
-password = ```dr4E8u```
-
-Et voici les urls
-- http://localhost:8081/dashboard/#/
-- http://localhost:8080/web-simple/
-- http://fortune.localhost:8080/
-- http://utilisateurs.localhost:8080/
-- http://clusterswarm.localhost:8080/
-- http://flask.localhost:8080/
+Voici les urls
+- http://o22408064-2:8080/dashboard/#/
+- http://o22408064-2/web-simple/
+- http://fortune.o22408064-2/
+- http://utilisateurs.o22408064-2/
+- http://clusterswarm.o22408064-2/
+- http://flask.o22408064-2/
 
 > Pour accéder aux applications, il est nécessaire d'entrer l'utilisateur « ```mel``` » et le mot de passe « ```hello``` »
 
