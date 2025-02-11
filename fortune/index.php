@@ -8,7 +8,7 @@ header("Content-Type: text/html");
 
 <?php
 
-$fortune = shell_exec("/usr/bin/fortune limerick");
+$fortune = shell_exec("/usr/bin/fortune startrek");
 $fortune = str_replace("\t\t--", "  --", $fortune);
 
 echo $fortune;
