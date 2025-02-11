@@ -57,7 +57,7 @@ services:
       replicas: 1
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.get-back-in-touch.rule=Host(`utilisateurs.o22408064-2`)"
+        - "traefik.http.routers.get-back-in-touch.rule=Host(`utilisateurs.o22408064-2`) || Host(`utilisateurs.localhost`)"
         - "traefik.http.services.get-back-in-touch.loadbalancer.server.port=80"
 
   # Swarm cluster
@@ -100,7 +100,7 @@ services:
       replicas: 5
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.swarm-cluster.rule=Host(`clusterswarm.o22408064-2`)"
+        - "traefik.http.routers.swarm-cluster.rule=Host(`clusterswarm.o22408064-2`) || Host(`clusterswarm.localhost`)"
         - "traefik.http.services.swarm-cluster.loadbalancer.server.port=80"
 
   # fortune
@@ -114,7 +114,7 @@ services:
       replicas: 1
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.fortune.rule=Host(`fortune.o22408064-2`)"
+        - "traefik.http.routers.fortune.rule=Host(`fortune.o22408064-2`) || Host(`fortune.localhost`)"
         - "traefik.http.services.fortune.loadbalancer.server.port=80"
 
   # flask
@@ -140,7 +140,7 @@ services:
       replicas: 1
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.flask.rule=Host(`flask.o22408064-2`)"
+        - "traefik.http.routers.flask.rule=Host(`flask.o22408064-2`) || Host(`flask.localhost`)"
         - "traefik.http.services.flask.loadbalancer.server.port=80"
 
   # Web simple

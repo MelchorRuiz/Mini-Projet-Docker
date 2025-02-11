@@ -9,6 +9,20 @@ Voici les urls
 - http://clusterswarm.o22408064-2/
 - http://flask.o22408064-2/
 
+Si ces urls ne fonctionnent pas, il est également possible de créer un tunnel ssh avec cette commande
+```bash
+ssh -J o22408064@acces-tp.iut45.univ-orleans.fr -o StrictHostKeyChecking=no -L 8080:0.0.0.0:80 -L 8081:0.0.0.0:8080 -N o22408064@o22408064-2
+```
+password = ```dr4E8u```
+
+Et voici les nouveaux urls
+- http://localhost:8081/dashboard/#/
+- http://localhost:8080/web-simple/
+- http://fortune.localhost:8080/
+- http://utilisateurs.localhost:8080/
+- http://clusterswarm.localhost:8080/
+- http://flask.localhost:8080/
+
 > Pour accéder aux applications, il est nécessaire d'entrer l'utilisateur « ```mel``` » et le mot de passe « ```hello``` »
 
 Pour faciliter l'utilisation, un script a été créé pour la configuration des machines virtuelles qui automatise la création d'un cluster swarm, la création des volumes gluster et le déploiement de tous les services via une pile docker et un fichier docker-compose.yml.
